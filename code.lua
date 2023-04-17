@@ -115,7 +115,7 @@ Section_D:NewKeybind("Win door check", "", Enum.KeyCode.Z, function()
 	checkVictoryDoor(game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace, "Castle", 12941506203)
 
 end)
-Section_S:NewSlider("SliderText", "SliderInfo", 200, 0, function(s)
+Section_S:NewSlider("JumpHeight", "", 200, 0, function(s)
     game.Players.LocalPlayer.Character.Humanoid.JumpHeight = s
 end)
 local Plr = game:GetService("Players").LocalPlayer
