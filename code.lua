@@ -161,7 +161,7 @@ Section_cred:NewButton("copy my pastebin", "", function()
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log",
+	Title = "Change log 21.04.23",
 	Text = "Add Tp to key, Tp to door, \n Tp lobby", 
 	})	
 end)
