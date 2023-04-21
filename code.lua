@@ -17,15 +17,15 @@ local Tab_S = Window:NewTab("Movements")
 local Section_S = Tab_S:NewSection("Movements")
 ESP:Toggle(true) 
 ESP.Players = false 
-Section:NewButton("Remov invis parts", "Some bag in the School", function()
+Section:NewButton("Remov invis parts", "Some bug in the School", function()
 	game:GetService("Workspace").Maps.School.InvisParts:destroy()
 	game:GetService("Workspace").Maps.Castle.InvisParts:destroy()
 	game:GetService("Workspace").Maps.MagicCube.InvisParts:destroy()
 end)
-Section:NewKeybind("remove gui", "hides the script on the button", Enum.KeyCode.F, function()
+Section:NewKeybind("remove gui", "hides the script on the button", Enum.KeyCode.B, function()
 	Library:ToggleUI()
 end)
-Section_E:NewToggle("Esp (some bags)", "There are mistakes", function(a)
+Section_E:NewToggle("Esp (some bugs)", "There are mistakes", function(a)
     if a then
         _G.espp = true;
 		ESP.Boxes = true
@@ -40,7 +40,7 @@ Section_E:NewToggle("Esp (some bags)", "There are mistakes", function(a)
 		ESP.Names = false
     end
 end)
-Section_E:NewToggle("Esp wit photo (some bags)", "There are mistakes", function(a)
+Section_E:NewToggle("Esp wit photo (some bugs)", "There are mistakes", function(a)
     if a then
         _G.espp = true;
 	while _G.espp == true do
@@ -52,7 +52,7 @@ Section_E:NewToggle("Esp wit photo (some bags)", "There are mistakes", function(
 		espDecalDell()
     end
 end)
-Section_E:NewToggle("Item Esp (some bags)", "There are mistakes", function(a)
+Section_E:NewToggle("Item Esp (some bugs)", "There are mistakes", function(a)
     if a then
         _G.espp = true;
 	while _G.espp == true do
@@ -75,11 +75,11 @@ Section_D:NewToggle("Win door ", "Only already open", function(a)
         _G.espp = false;
     end
 end)
-Section_D:NewToggle("Auto tp win door Tthis is the setting)", "Only already open", function(a)
+Section_D:NewToggle("Auto tp win door (This is the setting)", "Only already open", function(a)
     _G.dtp = a
 end)
 
-Section_D:NewKeybind("Win door check", "", Enum.KeyCode.Z, function()
+Section_D:NewKeybind("Win door check", "Only already open", Enum.KeyCode.Z, function()
 	local function checkVictoryDoor(itemHuntFolder, mapName, iconId)
     local victoryDoorFound = false
     for _, v in ipairs(itemHuntFolder:GetDescendants()) do
@@ -115,6 +115,26 @@ Section_D:NewKeybind("Win door check", "", Enum.KeyCode.Z, function()
 	checkVictoryDoor(game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace, "Castle", 12941506203)
 
 end)
+Section_D:NewKeybind("Tp to key", "", Enum.KeyCode.X, function()
+	tpkey()
+end)
+Section_D:NewKeybind("Tp to door", "", Enum.KeyCode.C, function()
+	tpdoor()
+end)
+Section_S:NewButton("Tp to lobby", "", function()
+	_G.tpback = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Lobby.BackLobbySpawnLocation.CFrame + Vector3.new(0,3,0)
+end)
+Section_S:NewButton("Tp to back", "", function()
+	if _G.tpback == "nil" then
+		game:GetService("StarterGui"):SetCore("SendNotification",{
+		Title = "Tp back nil",
+		Text = "first tp in the lobby", 
+		})
+	else
+		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = _G.tpback
+	end
+end)
 Section_S:NewSlider("JumpHeight", "", 200, 0, function(s)
     game.Players.LocalPlayer.Character.Humanoid.JumpHeight = s
 end)
@@ -139,6 +159,70 @@ Section_cred:NewButton("copy my pastebin", "", function()
 	Text = "My pastebin copied to clipboard", 
 })
 end)
+Section_cred:NewButton("Change log", "", function()
+	game:GetService("StarterGui"):SetCore("SendNotification",{
+	Title = "Change log",
+	Text = "Add Tp to key, Tp to door, \n Tp lobby", 
+	})	
+end)
+function tpdoor()
+	local function teleportToGhostRoot(itemHuntFolder)
+    for i, v in pairs(itemHuntFolder:GetDescendants()) do
+        if v.Name == "GhostRoot" and #v:GetChildren() == 0 then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
+            break
+        end
+    end
+	end
+
+	teleportToGhostRoot(game:GetService("Workspace").Maps.School.ItemHuntFolder.ItemPlace)
+	teleportToGhostRoot(game:GetService("Workspace").Maps.Castle.ItemHuntFolder.ItemPlace)
+	teleportToGhostRoot(game:GetService("Workspace").Maps.MagicCube.ItemHuntFolder.ItemPlace)
+end
+function tpkey()
+	local maps = {"School", "Castle", "MagicCube"}
+
+	for _, map in ipairs(maps) do
+	for i,v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
+		if v.Name == "Handle" and v.Parent.Parent.Parent.Name ~= "DrawerContainer" then
+			local tp = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+			wait()
+			for i,b in pairs(game:GetService("CoreGui").RobloxGui.Backpack.Hotbar:GetDescendants()) do
+				if b.Name == "ToolName" and b.Text == "Секретный Ключ" then
+					game:GetService("StarterGui"):SetCore("SendNotification",{
+					Title = "No",
+					Text = "You already have a key", 
+					Icon = "rbxassetid://12572688026"
+					})
+					break
+				else
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
+					game:GetService("Workspace").Camera.CFrame = CFrame.new(22.0546761, 12.4027071, 13.0725975, -0.0610468015, 0.982970953, -0.173324943, 9.31322575e-10, 0.173648819, 0.98480773, 0.998134911, 0.0601193607, -0.0106007047)
+					local virtualInputManager = game:GetService("VirtualInputManager")
+					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game) 
+					wait()
+					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+					wait(0.22)
+					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game) 
+					wait()
+					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+					wait(0.22)
+					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game) 
+					wait()
+					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+					wait(0.22)
+					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game) 
+					wait()
+					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = tp
+					break
+				end	
+			end
+			break	
+		end
+	end
+	end
+end
 function espDecalDell()
 	for _, b in ipairs(game:GetService("Workspace").Game.GamePlayers:GetDescendants()) do
 	if b:IsA("BillboardGui") then
