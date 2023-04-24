@@ -15,6 +15,8 @@ local Tab_D = Window:NewTab("Door")
 local Section_D = Tab_D:NewSection("Door")
 local Tab_S = Window:NewTab("Movements")
 local Section_S = Tab_S:NewSection("Movements")
+local Tab_V = Window:NewTab("Visuals")
+local Section_V = Tab_V:NewSection("Visuals")
 ESP:Toggle(true) 
 ESP.Players = false 
 Section:NewButton("Remov invis parts", "Some bug in the School", function()
@@ -78,48 +80,69 @@ end)
 Section_D:NewToggle("Auto tp win door (This is the setting)", "Only already open", function(a)
     _G.dtp = a
 end)
-
 Section_D:NewKeybind("Win door check", "Only already open", Enum.KeyCode.Z, function()
-	local function checkVictoryDoor(itemHuntFolder, mapName, iconId)
-    local victoryDoorFound = false
-    for _, v in ipairs(itemHuntFolder:GetDescendants()) do
-        if v.Name == "TouchInterest" and v.Parent then
-			if _G.TpD == true then
-				local back = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-				wait(1)
-				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 4, -50)
-				wait(2.55)
-				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
-				victoryDoorFound = true
-				wait(2)
-				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = back
-				break
-			else
-				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
-            	victoryDoorFound = true
-				break
-			end
+    local function checkVictoryDoor(itemHuntFolder)
+        local victoryDoorFound = false
+        for _, v in ipairs(itemHuntFolder:GetDescendants()) do
+            if v.Name == "TouchInterest" and v.Parent then
+                if _G.TpD == true then
+                    local back = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                    wait(1)
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 4, -50)
+                    wait(2.55)
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
+                    victoryDoorFound = true
+                    wait(2)
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = back
+                    break
+                else
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
+                    victoryDoorFound = true
+                    break
+                end
+            end
+        end
+        return victoryDoorFound
+    end
+
+    local victoryDoorNotFound = true
+    for _, itemHuntFolder in ipairs({
+        game.Workspace.Maps.School.ItemHuntFolder.ItemPlace,
+        game.Workspace.Maps.MagicCube.ItemHuntFolder.ItemPlace,
+        game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace,
+    }) do
+        if not checkVictoryDoor(itemHuntFolder) then
+            victoryDoorNotFound = true
         end
     end
 
-    if not victoryDoorFound then
+    if victoryDoorNotFound then
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "No win door",
-            Text = "while there is no victory door " .. mapName,
-            Icon = "rbxassetid://" .. iconId
+            Text = "while there is no victory door ",
+            Icon = ""
         })
     end
-	end
-	checkVictoryDoor(game.Workspace.Maps.School.ItemHuntFolder.ItemPlace, "School", 12941506088)
-	checkVictoryDoor(game.Workspace.Maps.MagicCube.ItemHuntFolder.ItemPlace, "Magic Cube", 13110717383)
-	checkVictoryDoor(game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace, "Castle", 12941506203)
-
 end)
 Section_D:NewKeybind("Tp to key", "", Enum.KeyCode.X, function()
 	tpkey()
 end)
 Section_D:NewKeybind("Tp to door", "", Enum.KeyCode.C, function()
 	tpdoor()
+end)
+Section_S:NewToggle("Panic  default 5 seconds", "", function(a)
+    if a then
+        _G.espp = true;
+	while _G.espp == true do
+		panic()
+    	wait()
+	end
+    else
+        _G.espp = false;
+    end
+end)
+Section_S:NewSlider("Panic seconds", "", 30, 0, function(s)
+	_G.sec = s
 end)
 Section_S:NewButton("Tp to lobby", "", function()
 	_G.tpback = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
@@ -138,6 +161,59 @@ end)
 Section_S:NewSlider("JumpHeight", "", 200, 0, function(s)
     game.Players.LocalPlayer.Character.Humanoid.JumpHeight = s
 end)
+local effectNames = {
+    ["Body Eyes"] = "FX_BodyEyes",
+    ["Body Smoke"] = "FX_BodySmoke",
+    ["Body Mosaic"] = "FX_BodyMosaic"
+}
+local function AttachFXToCharacter(effectName)
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Character
+    local humanoidRootPart = character.HumanoidRootPart
+    local fx = humanoidRootPart:FindFirstChild(effectName)
+    if not fx then
+        local fxClone = game:GetService("ReplicatedStorage").Resources.FX[effectName]:Clone()
+        fxClone.Anchored = true
+        fxClone.Parent = humanoidRootPart
+        game:GetService("RunService").Heartbeat:Connect(function()
+            local fx = humanoidRootPart:FindFirstChild(effectName)
+            if fx then
+                fx.CFrame = humanoidRootPart.CFrame
+            end
+        end)
+    end
+end
+Section_V:NewDropdown("Visuals", "", {"Body Eyes", "Body Smoke", "Body Mosaic"}, function(effectType)
+    local effectName = effectNames[effectType]
+    if effectName then
+        AttachFXToCharacter(effectName)
+    end
+end)
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(character)
+    for _, effectName in pairs(effectNames) do
+        AttachFXToCharacter(effectName)
+    end
+end)
+Section_V:NewButton("Dell visuals", "", function()
+	local function RemoveFXFromCharacter(effectName)
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Character
+    local humanoidRootPart = character.HumanoidRootPart
+    local fx = humanoidRootPart:FindFirstChild(effectName)
+    if fx then
+        fx:Destroy()
+    end
+	end
+	RemoveFXFromCharacter("FX_BodyEyes")
+	RemoveFXFromCharacter("FX_BodySmoke")
+	RemoveFXFromCharacter("FX_BodyMosaic")
+end)
+local vu = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:connect(function()
+   vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+   wait(1)
+   vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+end)
 local Plr = game:GetService("Players").LocalPlayer
 local Mouse = Plr:GetMouse()
 Mouse.Button1Down:connect(function()
@@ -150,21 +226,29 @@ Section_cred:NewButton("copy my github", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
 	Title = "Copy",
 	Text = "My github copied to clipboard", 
-})
+	})
 end)
 Section_cred:NewButton("copy my pastebin", "", function()
 	setclipboard("https://pastebin.com/u/Varap228")
 	game:GetService("StarterGui"):SetCore("SendNotification",{
 	Title = "Copy",
 	Text = "My pastebin copied to clipboard", 
-})
+	})
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log 21.04.23",
-	Text = "Add Tp to key, Tp to door, \n Tp lobby", 
+	Title = "Change log 24.04.23",
+	Text = "Add Visuals, Panic", 
 	})	
 end)
+function panic()
+	if game:GetService("Players").Gejoop28.PlayerGui.ScreenChasedWarning.Enabled then
+    local back = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame =  game:GetService("Workspace").Lobby.BackLobbySpawnLocation.CFrame + Vector3.new(0, 3, 0)
+    wait(_G.sec or 5)
+    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = back
+	end
+end
 function tpdoor()
 	local function teleportToGhostRoot(itemHuntFolder)
     for i, v in pairs(itemHuntFolder:GetDescendants()) do
@@ -174,14 +258,12 @@ function tpdoor()
         end
     end
 	end
-
 	teleportToGhostRoot(game:GetService("Workspace").Maps.School.ItemHuntFolder.ItemPlace)
 	teleportToGhostRoot(game:GetService("Workspace").Maps.Castle.ItemHuntFolder.ItemPlace)
 	teleportToGhostRoot(game:GetService("Workspace").Maps.MagicCube.ItemHuntFolder.ItemPlace)
 end
 function tpkey()
 	local maps = {"School", "Castle", "MagicCube"}
-
 	for _, map in ipairs(maps) do
 	for i,v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
 		if v.Name == "Handle" and v.Parent.Parent.Parent.Name ~= "DrawerContainer" then
@@ -229,7 +311,6 @@ function espDecalDell()
 		b.Enabled = false
 	end
 end
-
 end
 function espDecal()
 	local function createBillboardGui(b, imageId)
@@ -250,7 +331,6 @@ function espDecal()
 	imageLabel.Image = "rbxassetid://" .. tostring(imageId)
 	billboardGui.Enabled = true
 	end
-
 	local gamePlayers = game:GetService("Workspace").Game.GamePlayers:GetChildren()
 	for i = 1, #gamePlayers do
 	local b = gamePlayers[i]
@@ -277,7 +357,6 @@ function IespDell()
         end
     end
 	end
-
 	local castleFolder = game:GetService("Workspace").Maps.Castle.ItemHuntFolder.ItemSpawn
 	local schoolFolder = game:GetService("Workspace").Maps.School.ItemHuntFolder.ItemSpawn
 	local magicCubeFolder = game:GetService("Workspace").Maps.MagicCube.ItemHuntFolder.ItemSpawn
@@ -285,7 +364,6 @@ function IespDell()
 	disableBillboardGuis(castleFolder)
 	disableBillboardGuis(schoolFolder)
 	disableBillboardGuis(magicCubeFolder)
-
 end
 function Iesp()
 	local function createBillboardGui(parent)
@@ -304,9 +382,7 @@ function Iesp()
     TextLabel.TextColor3 = Color3.new(1, 0, 0)
     TextLabel.TextScaled = true
 	end
-
 	local maps = {"Castle", "School", "MagicCube"}
-
 	for _, map in ipairs(maps) do
     for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
         if v.Parent.Name == "Handle" and not v.Parent:FindFirstChild("BillboardGui") then
@@ -353,13 +429,11 @@ function Door()
 		Icon = icon
 	})
 	end
-
 	local function teleportToDoor(doorCFrame)
 	if _G.dtp == true then
 		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = doorCFrame
 	end
 	end
-
 	local function searchForDoor(itemPlace, title, text, icon)
 	for _, v in pairs(itemPlace:GetDescendants()) do
 		if v.Name == "TouchInterest" then
@@ -368,9 +442,7 @@ function Door()
 		end
 	end
 	end
-
 	searchForDoor(game.Workspace.Maps.School.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the School", "rbxassetid://12941506088")
 	searchForDoor(game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Castle", "rbxassetid://12941506203")
 	searchForDoor(game.Workspace.Maps.MagicCube.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Magic Cube", "rbxassetid://13110717383")
-
 end
