@@ -1,4 +1,4 @@
--- Butcher rbxassetid://12629402865
+-- Butcher rbxassetid://12629402865 
 -- Bear rbxassetid://12629403201
 -- Joker rbxassetid://12629403068
 -- Rabbit rbxassetid://12629403353
@@ -7,8 +7,8 @@ local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
 local Window = Library.CreateLib("By Varap228", "RJTheme8")
 local Tab_cred = Window:NewTab("Credits")
 local Section_cred = Tab_cred:NewSection("Ctrl+click tp")
-local Tab = Window:NewTab("Main")
-local Section = Tab:NewSection("Main")
+local Tab = Window:NewTab("Main") 
+local Section = Tab:NewSection("Main") -- :GetChildren :GetDescendants
 local Tab_E = Window:NewTab("Esp")
 local Section_E = Tab_E:NewSection("Esp")
 local Tab_D = Window:NewTab("Door")
@@ -20,9 +20,7 @@ local Section_V = Tab_V:NewSection("Visuals")
 ESP:Toggle(true) 
 ESP.Players = false 
 Section:NewButton("Remov invis parts", "Some bug in the School", function()
-	game:GetService("Workspace").Maps.School.InvisParts:destroy()
-	game:GetService("Workspace").Maps.Castle.InvisParts:destroy()
-	game:GetService("Workspace").Maps.MagicCube.InvisParts:destroy()
+	delIPart()
 end)
 Section:NewKeybind("remove gui", "hides the script on the button", Enum.KeyCode.B, function()
 	Library:ToggleUI()
@@ -110,6 +108,7 @@ Section_D:NewKeybind("Win door check", "Only already open", Enum.KeyCode.Z, func
         game.Workspace.Maps.School.ItemHuntFolder.ItemPlace,
         game.Workspace.Maps.MagicCube.ItemHuntFolder.ItemPlace,
         game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace,
+		game.Workspace.Maps.Refuge.ItemHuntFolder.ItemPlace,
     }) do
         if not checkVictoryDoor(itemHuntFolder) then
             victoryDoorNotFound = true
@@ -130,7 +129,7 @@ end)
 Section_D:NewKeybind("Tp to door", "", Enum.KeyCode.C, function()
 	tpdoor()
 end)
-Section_S:NewToggle("Panic  default 5 seconds", "", function(a)
+Section_S:NewToggle("Panic default 5 seconds", "", function(a)
     if a then
         _G.espp = true;
 	while _G.espp == true do
@@ -237,10 +236,29 @@ Section_cred:NewButton("copy my pastebin", "", function()
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log 24.04.23",
-	Text = "Add Visuals, Panic", 
+	Title = "Change log 28.04.23",
+	Text = "update for the\nlatest version of the game", 
 	})	
 end)
+function delIPart()
+	local Maps = game:GetService("Workspace").Maps
+	Maps.School.InvisParts:Destroy()
+	Maps.Castle.InvisParts:Destroy()
+	Maps.MagicCube.InvisParts:Destroy()
+	Maps.Refuge.InvisParts:Destroy()
+
+	for _, v in ipairs(Maps.Refuge.Parts["3"]:GetDescendants()) do
+		if v.Name == "collide" then
+			v:Destroy()
+		end
+	end
+
+	for _, b in ipairs(Maps.MagicCube.Parts.Folder.Folder:GetDescendants()) do
+		if b.Name == "BlockWall" then
+			b:Destroy()
+		end
+	end
+end
 function panic()
 	if game:GetService("Players").Gejoop28.PlayerGui.ScreenChasedWarning.Enabled then
     local back = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
@@ -261,9 +279,10 @@ function tpdoor()
 	teleportToGhostRoot(game:GetService("Workspace").Maps.School.ItemHuntFolder.ItemPlace)
 	teleportToGhostRoot(game:GetService("Workspace").Maps.Castle.ItemHuntFolder.ItemPlace)
 	teleportToGhostRoot(game:GetService("Workspace").Maps.MagicCube.ItemHuntFolder.ItemPlace)
+	teleportToGhostRoot(game:GetService("Workspace").Maps.Refuge.ItemHuntFolder.ItemPlace)
 end
 function tpkey()
-	local maps = {"School", "Castle", "MagicCube"}
+	local maps = {"School", "Castle", "MagicCube", "Refuge"}
 	for _, map in ipairs(maps) do
 	for i,v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
 		if v.Name == "Handle" and v.Parent.Parent.Parent.Name ~= "DrawerContainer" then
@@ -289,7 +308,7 @@ function tpkey()
 					wait()
 					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
 					wait(0.22)
-					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game) 
+					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
 					wait()
 					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
 					wait(0.22)
@@ -360,10 +379,11 @@ function IespDell()
 	local castleFolder = game:GetService("Workspace").Maps.Castle.ItemHuntFolder.ItemSpawn
 	local schoolFolder = game:GetService("Workspace").Maps.School.ItemHuntFolder.ItemSpawn
 	local magicCubeFolder = game:GetService("Workspace").Maps.MagicCube.ItemHuntFolder.ItemSpawn
-
+	local refugeFolder = game:GetService("Workspace").Maps.Refuge.ItemHuntFolder.ItemSpawn
 	disableBillboardGuis(castleFolder)
 	disableBillboardGuis(schoolFolder)
 	disableBillboardGuis(magicCubeFolder)
+	disableBillboardGuis(refugeFolder)
 end
 function Iesp()
 	local function createBillboardGui(parent)
@@ -381,8 +401,8 @@ function Iesp()
     TextLabel.Text = "Key"
     TextLabel.TextColor3 = Color3.new(1, 0, 0)
     TextLabel.TextScaled = true
-	end
-	local maps = {"Castle", "School", "MagicCube"}
+	end 
+	local maps = {"Castle", "School", "MagicCube", "Refuge"}
 	for _, map in ipairs(maps) do
     for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
         if v.Parent.Name == "Handle" and not v.Parent:FindFirstChild("BillboardGui") then
@@ -441,8 +461,9 @@ function Door()
 			teleportToDoor(v.Parent.CFrame)
 		end
 	end
-	end
+	end 
 	searchForDoor(game.Workspace.Maps.School.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the School", "rbxassetid://12941506088")
 	searchForDoor(game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Castle", "rbxassetid://12941506203")
 	searchForDoor(game.Workspace.Maps.MagicCube.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Magic Cube", "rbxassetid://13110717383")
+	searchForDoor(game.Workspace.Maps.Refuge.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Refuge", "rbxassetid://13256112532")
 end
