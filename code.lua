@@ -97,6 +97,7 @@ Section_D:NewKeybind("Win door check", "Only already open", Enum.KeyCode.Z, func
         game.Workspace.Maps.MagicCube.ItemHuntFolder.ItemPlace,
         game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace,
 		game.Workspace.Maps.Refuge.ItemHuntFolder.ItemPlace,
+		game.Workspace.Maps.IceCave.ItemHuntFolder.ItemPlace,
     }) do
         if not checkVictoryDoor(itemHuntFolder) then
             victoryDoorNotFound = true
@@ -219,7 +220,7 @@ Section_cred:NewButton("copy my pastebin", "", function()
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log 28.04.23",
+	Title = "Change log 14.05.23",
 	Text = "update for the\nlatest version of the game", 
 	})	
 end)
@@ -239,7 +240,8 @@ function delIPart()
 	Maps.School.InvisParts:Destroy()
 	Maps.Castle.InvisParts:Destroy()
 	Maps.MagicCube.InvisParts:Destroy()
-	Maps.Refuge.InvisParts:Destroy()
+	Maps.Refuge.InvisParts:Destroy() 
+	Maps.IceCave.InvisParts:Destroy()
 end
 function panic()
 	if game:GetService("Players").Gejoop28.PlayerGui.ScreenChasedWarning.Enabled then
@@ -261,10 +263,11 @@ function tpdoor()
 	teleportToGhostRoot(game:GetService("Workspace").Maps.School.ItemHuntFolder.ItemPlace)
 	teleportToGhostRoot(game:GetService("Workspace").Maps.Castle.ItemHuntFolder.ItemPlace)
 	teleportToGhostRoot(game:GetService("Workspace").Maps.MagicCube.ItemHuntFolder.ItemPlace)
-	teleportToGhostRoot(game:GetService("Workspace").Maps.Refuge.ItemHuntFolder.ItemPlace)
+	teleportToGhostRoot(game:GetService("Workspace").Maps.Refuge.ItemHuntFolder.ItemPlace) 
+	teleportToGhostRoot(game:GetService("Workspace").Maps.IceCave.ItemHuntFolder.ItemPlace)
 end
 function tpkey()
-	local maps = {"School", "Castle", "MagicCube", "Refuge"}
+	local maps = {"School", "Castle", "MagicCube", "Refuge", "IceCave"}
 	for _, map in ipairs(maps) do
 	for i,v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
 		if v.Name == "Handle" and v.Parent.Parent.Parent.Name ~= "DrawerContainer" then
@@ -366,11 +369,13 @@ function IespDell()
 	local castleFolder = game:GetService("Workspace").Maps.Castle.ItemHuntFolder.ItemSpawn
 	local schoolFolder = game:GetService("Workspace").Maps.School.ItemHuntFolder.ItemSpawn
 	local magicCubeFolder = game:GetService("Workspace").Maps.MagicCube.ItemHuntFolder.ItemSpawn
-	local refugeFolder = game:GetService("Workspace").Maps.Refuge.ItemHuntFolder.ItemSpawn
+	local refugeFolder = game:GetService("Workspace").Maps.Refuge.ItemHuntFolder.ItemSpawn 
+	local icecaveFolder = game:GetService("Workspace").Maps.IceCave.ItemHuntFolder.ItemSpawn
 	disableBillboardGuis(castleFolder)
 	disableBillboardGuis(schoolFolder)
 	disableBillboardGuis(magicCubeFolder)
 	disableBillboardGuis(refugeFolder)
+	disableBillboardGuis(icecaveFolder)
 end
 function Iesp()
 	spawn(function ()
@@ -391,7 +396,7 @@ function Iesp()
 			TextLabel.TextColor3 = Color3.new(1, 0, 0)
 			TextLabel.TextScaled = true
 			end 
-			local maps = {"Castle", "School", "MagicCube", "Refuge"}
+			local maps = {"Castle", "School", "MagicCube", "Refuge", "IceCave"}
 			for _, map in ipairs(maps) do
 				for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
 					if v.Parent.Name == "Handle" and not v.Parent:FindFirstChild("BillboardGui") then
@@ -465,4 +470,5 @@ function Door()
 	searchForDoor(game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Castle", "rbxassetid://12941506203")
 	searchForDoor(game.Workspace.Maps.MagicCube.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Magic Cube", "rbxassetid://13110717383")
 	searchForDoor(game.Workspace.Maps.Refuge.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Refuge", "rbxassetid://13256112532")
+	searchForDoor(game.Workspace.Maps.IceCave.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Ice Cave", "rbxassetid://13416355248")
 end
