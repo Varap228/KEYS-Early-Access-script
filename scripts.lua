@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Varap228/KEYS-Early-Access-script/main/code.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Varap228/KEYS-script-by-Varap/main/code.lua"))()
