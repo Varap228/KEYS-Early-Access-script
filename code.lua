@@ -8,21 +8,121 @@ local Window = Library.CreateLib("By Varap228", "RJTheme8")
 local Tab_cred = Window:NewTab("Credits")
 local Section_cred = Tab_cred:NewSection("Ctrl+click tp")
 local Tab = Window:NewTab("Main") 
-local Section = Tab:NewSection("Main") -- :GetChildren :GetDescendants
+local Section = Tab:NewSection("Main")
 local Tab_E = Window:NewTab("Esp")
 local Section_E = Tab_E:NewSection("Esp")
+local Tab_Id = Window:NewTab("Key and Door")
+local Section_Kd = Tab_Id:NewSection("Key")
 local Tab_D = Window:NewTab("Door")
 local Section_D = Tab_D:NewSection("Door")
-local Tab_S = Window:NewTab("Movements")
-local Section_S = Tab_S:NewSection("Movements")
+local Tab_S = Window:NewTab("Speed and Jump")
+local Section_S = Tab_S:NewSection("Speed")
+local Tab_M = Window:NewTab("Movements")
+local Section_M = Tab_M:NewSection("Movements")
 local Tab_V = Window:NewTab("Visuals")
 local Section_V = Tab_V:NewSection("Visuals")
 ESP:Toggle(true) 
 ESP.Players = false 
-getgenv().espMonster = false
-getgenv().espD = false
-getgenv().ItmEsp = false
-getgenv().setgtpdor = false
+_G.espMonster = false
+_G.espD = false
+_G.KeyEsp = false
+_G.ft = false
+_G.valHold = 0
+_G.Speed = 16
+local Hu = game.Players.LocalPlayer.Character.Humanoid
+local maps = {"Castle", "School", "MagicCube", "Refuge", "IceCave"}
+local virtualInputManager = game:GetService("VirtualInputManager")
+local localPlayer = game:GetService("Players").LocalPlayer
+local function checkKey()
+    if not localPlayer then
+        return
+    else
+        local success, playerData = pcall(function()
+            return workspace.Game.GamePlayers[localPlayer.Name]
+        end)
+        if not success or not playerData then
+            return
+        else
+            local success, secretKey = pcall(function()
+                return playerData.SecretKey
+            end)
+            if not success or not secretKey then
+                virtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+                wait()
+				virtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+            else
+            end
+        end
+    end
+end
+local function KeyDoor()
+    for _, map in ipairs(maps) do
+        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
+            if v.Parent.Name == "Handle" then
+                local proximityPrompt = v.Parent.Parent.Parent:FindFirstChild("InteractPrompt")
+                if proximityPrompt then
+                    proximityPrompt.RequiresLineOfSight = false
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
+                    wait(0.3)
+                    fireproximityprompt(proximityPrompt, 1, true)
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.Lobby.BackLobbySpawnLocation.CFrame + Vector3.new(0, 4, 0)
+                    if not _G.ft then
+                        break
+                    end         
+                    wait(2.50)
+                    break
+                end
+            end
+        end
+    end
+    for _, map in ipairs(maps) do
+        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemPlace:GetDescendants()) do
+            if v.Name == "InteractPrompt" and v.Parent.Name == "ControlPart" then
+                v.HoldDuration = 0
+                v.RequiresLineOfSight = false
+                checkKey()
+                if not _G.ft then
+                    break
+                end   
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
+                wait(0.4)
+                fireproximityprompt(v, 1, true)
+                break
+            end
+        end
+    end
+end
+
+local function Check()
+    while _G.ft do
+        if not _G.ft then
+            break
+        end
+        for _, map in ipairs(maps) do
+            local itemPlace = game.Workspace.Maps[map].ItemHuntFolder.ItemPlace
+            if #itemPlace:GetChildren() > 0 then
+                local descendants = itemPlace:GetDescendants()
+                local ghostRootAvailable = false
+                for i, b in ipairs(descendants) do 
+                    if b.Name == "GhostRoot" and #b:GetDescendants() == 0 then
+                        ghostRootAvailable = true
+                        KeyDoor()
+                        break
+                    end
+                end
+
+                if not ghostRootAvailable then
+                    for _, v in pairs(itemPlace:GetDescendants()) do
+		                if v.Name == "TouchInterest" and v.Parent.Name == "ExitRoot" then
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
+                        end
+                    end
+                end
+            end
+        end
+        wait()
+    end
+end
 Section:NewButton("Remov invis parts", "Some bug in the School", function()
 	delIPart()
 end)
@@ -30,28 +130,105 @@ Section:NewKeybind("remove gui", "hides the script on the button", Enum.KeyCode.
 	Library:ToggleUI()
 end)
 Section_E:NewToggle("Esp (some bugs)", "There are mistakes", function(espVal)
-	getgenv().espMonster = espVal
+	_G.espMonster = espVal
 	ESP.Boxes = espVal
 	ESP.Names = espVal
 	if espVal then
 		esp()
 	end
 end)
+
 Section_E:NewToggle("Esp wit photo (some bugs)", "There are mistakes", function(espDecalV)
-	getgenv().espD = espDecalV
+	_G.espD = espDecalV
 	if espDecalV then
 		espDecal()
 	else
 		espDecalDell()
 	end
 end)
-Section_E:NewToggle("Item Esp (some bugs)", "There are mistakes", function(ItmEspV) 
-	getgenv().ItmEsp = ItmEspV
-	if ItmEspV then
-		Iesp()
+Section_E:NewToggle("Key Esp (some bugs)", "There are mistakes", function(KeyEspV) 
+	_G.KeyEsp = KeyEspV
+	if KeyEspV then
+		Kesp()
 	else
 		IespDell()
 	end
+end)
+
+Section_Kd:NewButton("Key", "Allows you to take the key further and through walls", function()
+    for _, map in ipairs(maps) do
+        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
+            if v.Parent.Name == "Handle" then
+                local Ppt = v.Parent.Parent.Parent:FindFirstChild("InteractPrompt")
+                if Ppt then
+                    Ppt.RequiresLineOfSight = false
+                    Ppt.MaxActivationDistance = 20
+                end
+            end
+        end
+    end
+end)
+Section_Kd:NewButton("Removes Key functions", "Removes the possibility of new keys", function()
+    for _, map in ipairs(maps) do
+        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
+            if v.Parent.Name == "Handle" then
+                local Pt = v.Parent.Parent.Parent:FindFirstChild("InteractPrompt")
+                if Pt then
+                    Pt.RequiresLineOfSight = true
+                    Pt.MaxActivationDistance = 10
+                end
+            end
+        end
+    end
+end)
+Section_Kd:NewLabel("Door")
+Section_Kd:NewSlider("Hold duration", "changes the possibility of how long to delay E", 4, 0, function(VaH)
+    _G.valHold = VaH
+end)
+Section_Kd:NewButton("Door", "Allows you to take the key a little further and through walls", function()
+    for _, map in ipairs(maps) do
+        for i, r in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemPlace:GetDescendants()) do
+            if r.Name == "InteractPrompt" and r.Parent.Name == "ControlPart" then
+                r.HoldDuration = _G.valHold 
+                r.MaxActivationDistance = 9
+                r.RequiresLineOfSight = false
+            end
+        end
+    end
+end)
+Section_Kd:NewButton("Removes Door functions", "Removes the possibility of new doors", function()
+    for _, map in ipairs(maps) do
+        for i, r in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemPlace:GetDescendants()) do
+            if r.Name == "InteractPrompt" and r.Parent.Name == "ControlPart" then
+                r.HoldDuration = 4
+                r.MaxActivationDistance = 8
+                r.RequiresLineOfSight = true
+            end
+        end
+    end
+end)
+Section_Kd:NewLabel("Nightstandse")
+Section_Kd:NewButton("Off Nightstandse", "Disables the ability to open nightstands", function()
+    for _, map in ipairs(maps) do
+        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
+            if v.Name == "InteractPrompt" and v.Parent.Name == "ControlPart" then
+                v.Enabled = false
+            end
+        end
+    end
+end)
+Section_Kd:NewButton("On Nightstandse", "Includes the ability to open the nightstands", function()
+    for _, map in ipairs(maps) do
+        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
+            if v.Name == "InteractPrompt" and v.Parent.Name == "ControlPart" then
+                v.Enabled = true
+            end
+        end
+    end
+end)
+Section_D:NewToggle("Auto farm door", "BETA", function(ft)
+    _G.ft = ft
+    Check()
 end)
 Section_D:NewToggle("Win door ", "Only already open", function(a)
     if a then
@@ -72,20 +249,8 @@ Section_D:NewKeybind("Win door check", "Only already open", Enum.KeyCode.Z, func
         local victoryDoorFound = false
         for _, v in ipairs(itemHuntFolder:GetDescendants()) do
             if v.Name == "TouchInterest" and v.Parent then
-				if getgenv().setgtpdor then
-                    local back = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-                    wait(1)
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 4, -50)
-                    wait(3)
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
-                    victoryDoorFound = true
-                    wait(3)
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = back
-                    break
-				else
 					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
 					break
-				end	
                 end
             end
         return victoryDoorFound
@@ -104,16 +269,25 @@ Section_D:NewKeybind("Win door check", "Only already open", Enum.KeyCode.Z, func
         end
     end
 end)
-Section_D:NewToggle("tp lobby then to win door (This is the setting)", "", function(a)
-	getgenv().setgtpdor = a
-end)
+
 Section_D:NewKeybind("Tp to key", "", Enum.KeyCode.X, function()
 	tpkey()
 end)
 Section_D:NewKeybind("Tp to door", "", Enum.KeyCode.C, function()
 	tpdoor()
 end)
-Section_S:NewToggle("Panic default 5 seconds", "", function(a)
+
+Section_S:NewSlider("Speed value", "", 80, 16, function(spe)
+    _G.Speed = spe
+end) 
+Section_S:NewButton("Set Speed", "", function()
+    Hu:SetAttribute("BaseSpeed", _G.Speed)
+end)
+Section_S:NewLabel("Jump")
+Section_S:NewSlider("Jump Height", "", 80, 7, function(s)
+    game.Players.LocalPlayer.Character.Humanoid.JumpHeight = s
+end)
+Section_M:NewToggle("Panic default 5 seconds", "", function(a)
     if a then
         _G.espp = true;
 	while _G.espp == true do
@@ -124,14 +298,14 @@ Section_S:NewToggle("Panic default 5 seconds", "", function(a)
         _G.espp = false;
     end
 end)
-Section_S:NewSlider("Panic seconds", "", 30, 0, function(s)
+Section_M:NewSlider("Panic seconds", "", 30, 0, function(s)
 	_G.sec = s
 end)
-Section_S:NewButton("Tp to lobby", "", function()
+Section_M:NewButton("Tp to lobby", "", function()
 	_G.tpback = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
 	game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Lobby.BackLobbySpawnLocation.CFrame + Vector3.new(0,3,0)
 end)
-Section_S:NewButton("Tp to back", "", function()
+Section_M:NewButton("Tp to back", "", function()
 	if _G.tpback == nil then
 		game:GetService("StarterGui"):SetCore("SendNotification",{
 		Title = "Tp back nil",
@@ -140,9 +314,6 @@ Section_S:NewButton("Tp to back", "", function()
 	else
 		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = _G.tpback
 	end
-end)
-Section_S:NewSlider("JumpHeight", "", 200, 0, function(s)
-    game.Players.LocalPlayer.Character.Humanoid.JumpHeight = s
 end)
 local effectNames = {
     ["Body Eyes"] = "FX_BodyEyes",
@@ -220,10 +391,13 @@ Section_cred:NewButton("copy my pastebin", "", function()
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log 14.05.23",
-	Text = "update for the\nlatest version of the game", 
+	Title = "Change log 18.05.23",
+	Text = "Add: Auto farm doors, section Speed\nability to change Keys and Doors", 
 	})	
 end)
+
+
+
 function delIPart()
 	local Maps = game:GetService("Workspace").Maps
 	for _, v in ipairs(Maps.Refuge.Parts["3"]:GetDescendants()) do
@@ -312,13 +486,13 @@ end
 function espDecalDell()
 	for _, b in ipairs(game:GetService("Workspace").Game.GamePlayers:GetDescendants()) do
 	if b:IsA("BillboardGui") then
-		b.Enabled = false
+		b:Destroy()
 	end
 end
 end
 function espDecal()
 	spawn(function ()
-		while getgenv().espD == true do
+		while _G.espD == true do
 			local function createBillboardGui(b, imageId)
 			local billboardGui = b:FindFirstChild("BillboardGui")
 			if not billboardGui then
@@ -335,7 +509,6 @@ function espDecal()
 			end
 			local imageLabel = billboardGui.ImageLabel
 			imageLabel.Image = "rbxassetid://" .. tostring(imageId)
-			billboardGui.Enabled = true
 			end
 			local gamePlayers = game:GetService("Workspace").Game.GamePlayers:GetChildren()
 			for i = 1, #gamePlayers do
@@ -377,9 +550,9 @@ function IespDell()
 	disableBillboardGuis(refugeFolder)
 	disableBillboardGuis(icecaveFolder)
 end
-function Iesp()
+function Kesp()
 	spawn(function ()
-		while getgenv().ItmEsp == true do
+		while _G.KeyEsp == true do
 			local function createBillboardGui(parent)
 			local BillboardGui = Instance.new("BillboardGui")
 			local TextLabel = Instance.new("TextLabel")
@@ -396,7 +569,7 @@ function Iesp()
 			TextLabel.TextColor3 = Color3.new(1, 0, 0)
 			TextLabel.TextScaled = true
 			end 
-			local maps = {"Castle", "School", "MagicCube", "Refuge", "IceCave"}
+
 			for _, map in ipairs(maps) do
 				for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
 					if v.Parent.Name == "Handle" and not v.Parent:FindFirstChild("BillboardGui") then
@@ -410,7 +583,7 @@ function Iesp()
 end
 function esp()
 	spawn(function ()
-		while getgenv().espMonster == true do
+		while _G.espMonster == true do
 			ESP:AddObjectListener(Workspace.Game.GamePlayers, {
 			Name = "Bear", 
 			CustomName = "Bear",
