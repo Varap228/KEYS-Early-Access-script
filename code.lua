@@ -26,103 +26,13 @@ ESP.Players = false
 _G.espMonster = false
 _G.espD = false
 _G.KeyEsp = false
-_G.ft = false
+_G.fd = false
 _G.valHold = 0
 _G.Speed = 16
 local Hu = game.Players.LocalPlayer.Character.Humanoid
 local maps = {"Castle", "School", "MagicCube", "Refuge", "IceCave"}
-local virtualInputManager = game:GetService("VirtualInputManager")
 local localPlayer = game:GetService("Players").LocalPlayer
-local function checkKey()
-    if not localPlayer then
-        return
-    else
-        local success, playerData = pcall(function()
-            return workspace.Game.GamePlayers[localPlayer.Name]
-        end)
-        if not success or not playerData then
-            return
-        else
-            local success, secretKey = pcall(function()
-                return playerData.SecretKey
-            end)
-            if not success or not secretKey then
-                virtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
-                wait()
-				virtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-            else
-            end
-        end
-    end
-end
-local function KeyDoor()
-    for _, map in ipairs(maps) do
-        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
-            if v.Parent.Name == "Handle" then
-                local proximityPrompt = v.Parent.Parent.Parent:FindFirstChild("InteractPrompt")
-                if proximityPrompt then
-                    proximityPrompt.RequiresLineOfSight = false
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
-                    wait(0.3)
-                    fireproximityprompt(proximityPrompt, 1, true)
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = workspace.Lobby.BackLobbySpawnLocation.CFrame + Vector3.new(0, 4, 0)
-                    if not _G.ft then
-                        break
-                    end         
-                    wait(2.50)
-                    break
-                end
-            end
-        end
-    end
-    for _, map in ipairs(maps) do
-        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemPlace:GetDescendants()) do
-            if v.Name == "InteractPrompt" and v.Parent.Name == "ControlPart" then
-                v.HoldDuration = 0
-                v.RequiresLineOfSight = false
-                checkKey()
-                if not _G.ft then
-                    break
-                end   
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
-                wait(0.4)
-                fireproximityprompt(v, 1, true)
-                break
-            end
-        end
-    end
-end
 
-local function Check()
-    while _G.ft do
-        if not _G.ft then
-            break
-        end
-        for _, map in ipairs(maps) do
-            local itemPlace = game.Workspace.Maps[map].ItemHuntFolder.ItemPlace
-            if #itemPlace:GetChildren() > 0 then
-                local descendants = itemPlace:GetDescendants()
-                local ghostRootAvailable = false
-                for i, b in ipairs(descendants) do 
-                    if b.Name == "GhostRoot" and #b:GetDescendants() == 0 then
-                        ghostRootAvailable = true
-                        KeyDoor()
-                        break
-                    end
-                end
-
-                if not ghostRootAvailable then
-                    for _, v in pairs(itemPlace:GetDescendants()) do
-		                if v.Name == "TouchInterest" and v.Parent.Name == "ExitRoot" then
-                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
-                        end
-                    end
-                end
-            end
-        end
-        wait()
-    end
-end
 Section:NewButton("Remov invis parts", "Some bug in the School", function()
 	delIPart()
 end)
@@ -226,9 +136,18 @@ Section_Kd:NewButton("On Nightstandse", "Includes the ability to open the nights
         end
     end
 end)
-Section_D:NewToggle("Auto farm door", "BETA", function(ft)
-    _G.ft = ft
-    Check()
+Section_D:NewToggle("Auto farm door         BETA", "BETA", function(ft)
+    for _, map in ipairs(maps) do
+        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
+            if v.Name == "InteractPrompt" and v.Parent.Name == "ControlPart" then
+                v.Enabled = not ft
+            end
+        end
+    end
+    _G.fd = ft
+    local success, errorCheckWinDoor = pcall(function()
+        checkWinDoor()
+    end)
 end)
 Section_D:NewToggle("Win door ", "Only already open", function(a)
     if a then
@@ -391,12 +310,134 @@ Section_cred:NewButton("copy my pastebin", "", function()
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log 18.05.23",
-	Text = "Add: Auto farm doors, section Speed\nability to change Keys and Doors", 
+	Title = "Change log 20.05.23",
+	Text = "Fix: Auto farm, Panic, TpKey", 
 	})	
 end)
 
+function checkWinDoor()
+    while _G.fd == true do
+        if _G.fd == false then
+            break
+        end
+        for _, map in ipairs(maps) do
+            local itemPlace = game.Workspace.Maps[map].ItemHuntFolder.ItemPlace
+            if #itemPlace:GetChildren() > 0 then
+                local descendants = itemPlace:GetDescendants()
+                local ghostRootAvailable = false
+                for i, b in ipairs(descendants) do 
+                    if b.Name == "GhostRoot" and #b:GetDescendants() == 0 then
+                        ghostRootAvailable = true
+                        if _G.fd == false then
+                            break
+                        end
+                        CheckKeyDoor()
+                        break
+                    end
+                end
 
+                if not ghostRootAvailable then
+                    for _, v in pairs(itemPlace:GetDescendants()) do
+		                if v.Name == "TouchInterest" and v.Parent.Name == "ExitRoot" then
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
+                            break
+                        end
+                    end
+                end
+            end
+        end
+        wait()
+    end
+end
+
+function CheckKeyDoor()
+    if _G.fd == false then
+        return
+    end
+    if not localPlayer then
+        return
+    else
+        local success, playerData = pcall(function()
+            return workspace.Game.GamePlayers[localPlayer.Name]
+        end)
+        if not success or not playerData then
+            return
+        else
+            local success, secretKey = pcall(function()
+                return playerData.SecretKey
+            end)
+            if not success or not secretKey then
+                local success, errorGetKey = pcall(function()
+                    return getKey()
+                end)
+            else
+                local success, errorGetDoor = pcall(function()
+                    return getDoor()
+                end)
+            end
+        end
+    end
+end
+
+
+function getKey()
+    for _, map in ipairs(maps) do
+        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
+            if v.Parent.Name == "Handle" then
+                local proximityPrompt = v.Parent.Parent.Parent:FindFirstChild("InteractPrompt")
+                if proximityPrompt then
+                    proximityPrompt.RequiresLineOfSight = false
+                    proximityPrompt.MaxActivationDistance = 20
+                    if localPlayer.PlayerGui.ScreenChasedWarning.Enabled then
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame + Vector3.new(0, -9, 0)
+                        wait(0.1)
+                        fireproximityprompt(proximityPrompt, 1, true)
+                        if _G.fd == false then 
+                            break
+                        end         
+                        local success, errorCheckKeyDoor = pcall(function()
+                            CheckKeyDoor()
+                        end)
+                        break
+                    else
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame + Vector3.new(0, 3, 0)
+                        wait(0.2)
+                        fireproximityprompt(proximityPrompt, 1, true)
+                        if _G.fd == false then
+                            break
+                        end         
+                        local success, errorCheckKeyDoor = pcall(function()
+                            CheckKeyDoor()
+                        end)
+                        break
+                    end
+                end
+            end
+        end
+    end
+end
+
+function getDoor()
+    for _, map in ipairs(maps) do
+        for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemPlace:GetDescendants()) do
+            if v.Name == "InteractPrompt" and v.Parent.Name == "ControlPart" then
+                v.HoldDuration = 0
+                v.RequiresLineOfSight = false   
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame
+                wait(1)
+                fireproximityprompt(v, 1, true)
+                wait(0.1)
+                if _G.fd == false then
+                    break
+                end
+                local success, errorCheckWinDoor = pcall(function()
+                    checkWinDoor()
+                end)
+                break
+            end
+        end
+    end
+end
 
 function delIPart()
 	local Maps = game:GetService("Workspace").Maps
@@ -418,12 +459,12 @@ function delIPart()
 	Maps.IceCave.InvisParts:Destroy()
 end
 function panic()
-	if game:GetService("Players").Gejoop28.PlayerGui.ScreenChasedWarning.Enabled then
-    local back = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame =  game:GetService("Workspace").Lobby.BackLobbySpawnLocation.CFrame + Vector3.new(0, 3, 0)
-    wait(_G.sec or 5)
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = back
-	end
+    if game:GetService("Players").LocalPlayer.PlayerGui.ScreenChasedWarning.Enabled then
+        local back = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Lobby.BackLobbySpawnLocation.CFrame + Vector3.new(0, 3, 0)
+        wait(_G.sec or 5)
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = back
+    end
 end
 function tpdoor()
 	local function teleportToGhostRoot(itemHuntFolder)
@@ -441,46 +482,23 @@ function tpdoor()
 	teleportToGhostRoot(game:GetService("Workspace").Maps.IceCave.ItemHuntFolder.ItemPlace)
 end
 function tpkey()
-	local maps = {"School", "Castle", "MagicCube", "Refuge", "IceCave"}
 	for _, map in ipairs(maps) do
-	for i,v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
-		if v.Name == "Handle" and v.Parent.Parent.Parent.Name ~= "DrawerContainer" then
-			local tp = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-			wait()
-			for i,b in pairs(game:GetService("CoreGui").RobloxGui.Backpack.Hotbar:GetDescendants()) do
-				if b.Name == "ToolName" and b.Text == "Секретный Ключ" then
-					game:GetService("StarterGui"):SetCore("SendNotification",{
-					Title = "No",
-					Text = "You already have a key", 
-					Icon = "rbxassetid://12572688026"
-					})
-					break
-				else
-					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.CFrame
-					game:GetService("Workspace").Camera.CFrame = CFrame.new(22.0546761, 12.4027071, 13.0725975, -0.0610468015, 0.982970953, -0.173324943, 9.31322575e-10, 0.173648819, 0.98480773, 0.998134911, 0.0601193607, -0.0106007047)
-					local virtualInputManager = game:GetService("VirtualInputManager")
-					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game) 
-					wait()
-					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-					wait(0.22)
-					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game) 
-					wait()
-					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-					wait(0.22)
-					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-					wait()
-					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-					wait(0.22)
-					virtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game) 
-					wait()
-					virtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = tp
-					break
-				end	
-			end
-			break	
-		end
-	end
+        for i,v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
+            if v.Parent.Name == "Handle" then
+                local proxiPrompt = v.Parent.Parent.Parent:FindFirstChild("InteractPrompt")
+                if proxiPrompt then
+                    local tp = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                    proxiPrompt.RequiresLineOfSight = false
+                    proxiPrompt.MaxActivationDistance = 20
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame + Vector3.new(0, 2, 0)
+                    wait(0.1)
+                    fireproximityprompt(proxiPrompt, 1, true)
+                    wait()
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = tp
+                    break
+                end
+            end
+	    end
 	end
 end
 function espDecalDell()
