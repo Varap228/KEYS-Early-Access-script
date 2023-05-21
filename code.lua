@@ -32,9 +32,18 @@ _G.Speed = 16
 local Hu = game.Players.LocalPlayer.Character.Humanoid
 local maps = {"Castle", "School", "MagicCube", "Refuge", "IceCave"}
 local localPlayer = game:GetService("Players").LocalPlayer
-
+if game:GetService("CoreGui"):FindFirstChild("button ui") then
+    game:GetService("CoreGui"):FindFirstChild("button ui"):Destroy()
+end
 Section:NewButton("Remov invis parts", "Some bug in the School", function()
 	delIPart()
+end)
+Section:NewToggle("Button hide ui", "", function(uii)
+    if uii then
+        hideUiButton()
+    else
+        game:GetService("CoreGui"):FindFirstChild("button ui"):Destroy()
+    end
 end)
 Section:NewKeybind("remove gui", "hides the script on the button", Enum.KeyCode.B, function()
 	Library:ToggleUI()
@@ -310,10 +319,51 @@ Section_cred:NewButton("copy my pastebin", "", function()
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log 20.05.23",
-	Text = "Fix: Auto farm, Panic, TpKey", 
+	Title = "Change log 22.05.23",
+	Text = "Add: Button hide UI", 
 	})	
 end)
+
+
+function hideUiButton()
+    if not game:GetService("CoreGui"):FindFirstChild("button ui") then
+        local Screenn = Instance.new("ScreenGui")
+        Screenn.Parent = game:GetService("CoreGui")
+        Screenn.Name = "button ui"
+
+        local hide = Instance.new("ImageButton")
+        hide.Name = "hide UI"
+        hide.Parent = Screenn
+        hide.Position = UDim2.new(0, 120, 0, -30)
+        hide.Size = UDim2.new(0, 50, 0, 50)
+        hide.BorderSizePixel = 1
+        hide.ScaleType = Enum.ScaleType.Crop
+        hide.Image = "http://www.roblox.com/asset/?id=13511782360"
+        hide.MouseButton1Click:Connect(function()
+            Library:ToggleUI()
+        end)
+        local UserInputService = game:GetService("UserInputService")
+        local isDragging = false
+        local dragStartPos
+        local dragStartOffset
+        hide.MouseButton1Down:Connect(function()
+            isDragging = true
+            dragStartPos = UserInputService:GetMouseLocation()
+            dragStartOffset = hide.Position - UDim2.new(0, dragStartPos.X, 0, dragStartPos.Y)
+        end)
+        UserInputService.InputChanged:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseMovement and isDragging then
+                local currentPos = UserInputService:GetMouseLocation()
+                hide.Position = UDim2.new(0, currentPos.X, 0, currentPos.Y) + dragStartOffset
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                isDragging = false
+            end
+        end)
+    end
+end
 
 function checkWinDoor()
     while _G.fd == true do
@@ -570,7 +620,7 @@ function IespDell()
 end
 function Kesp()
 	spawn(function ()
-		while _G.KeyEsp == true do
+		while _G.KeyEsp do
 			local function createBillboardGui(parent)
 			local BillboardGui = Instance.new("BillboardGui")
 			local TextLabel = Instance.new("TextLabel")
