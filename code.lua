@@ -11,8 +11,8 @@ local Tab = Window:NewTab("Main")
 local Section = Tab:NewSection("Main")
 local Tab_E = Window:NewTab("Esp")
 local Section_E = Tab_E:NewSection("Esp")
-local Tab_Id = Window:NewTab("Key and Door")
-local Section_Kd = Tab_Id:NewSection("Key")
+local Tab_Id = Window:NewTab("Max distance")
+local Section_Kd = Tab_Id:NewSection("Dying players")
 local Tab_D = Window:NewTab("Door")
 local Section_D = Tab_D:NewSection("Door")
 local Tab_S = Window:NewTab("Speed and Jump")
@@ -27,22 +27,27 @@ _G.espMonster = false
 _G.espD = false
 _G.KeyEsp = false
 _G.fd = false
+_G.espPH = false
+_G.maxDistnPH = false
+_G.offInPards = false
 _G.valHold = 0
 _G.Speed = 16
-local Hu = game.Players.LocalPlayer.Character.Humanoid
+_G.nameButtonUI = "werh4w-**7+95q34t/-*9+"
 local maps = {"Castle", "School", "MagicCube", "Refuge", "IceCave"}
 local localPlayer = game:GetService("Players").LocalPlayer
-if game:GetService("CoreGui"):FindFirstChild("button ui") then
-    game:GetService("CoreGui"):FindFirstChild("button ui"):Destroy()
+local animIds = {"rbxassetid://12015079000", "rbxassetid://12015055714"}
+if game:GetService("CoreGui"):FindFirstChild(_G.nameButtonUI) then
+    game:GetService("CoreGui"):FindFirstChild(_G.nameButtonUI):Destroy()
 end
-Section:NewButton("Remov invis parts", "Some bug in the School", function()
+Section:NewToggle("Off/On Invisible walls", "", function(offOninvPard)
+    _G.offInPards = not offOninvPard
 	delIPart()
 end)
 Section:NewToggle("Button hide ui", "", function(uii)
     if uii then
         hideUiButton()
     else
-        game:GetService("CoreGui"):FindFirstChild("button ui"):Destroy()
+        game:GetService("CoreGui"):FindFirstChild(_G.nameButtonUI):Destroy()
     end
 end)
 Section:NewKeybind("remove gui", "hides the script on the button", Enum.KeyCode.B, function()
@@ -73,7 +78,39 @@ Section_E:NewToggle("Key Esp (some bugs)", "There are mistakes", function(KeyEsp
 		IespDell()
 	end
 end)
-
+Section_E:NewToggle("Esp dying players", "", function(espPl)
+    _G.espPH = espPl
+    if not espPL then
+        for i, player in pairs(workspace.Game.GamePlayers:GetChildren()) do
+            if player:FindFirstChild("EspBox") and player:FindFirstChild("Help") then
+                player:FindFirstChild("EspBox"):Destroy()
+                player:FindFirstChild("Help"):Destroy()
+            end
+        end
+    end
+    espPlayerHelp()
+    
+end)
+Section_Kd:NewToggle("Max lifting distance of a dying player", "", function(maxdistPH)
+    _G.maxDistnPH = maxdistPH
+    while _G.maxDistnPH do  
+        if not _G.maxDistnPH then
+            for i, v in pairs(workspace.Game.GamePlayers:GetDescendants()) do
+                if v.Name == "InteractPrompt" and v.Parent.Name == "HumanoidRootPart" then
+                    v.MaxActivationDistance = 8
+                end
+            end
+            break
+        end
+    for i, v in pairs(workspace.Game.GamePlayers:GetDescendants()) do
+        if v.Name == "InteractPrompt" and v.Parent.Name == "HumanoidRootPart" then
+            v.MaxActivationDistance = math.huge
+        end
+    end
+    wait(1)
+    end
+end)
+Section_Kd:NewLabel("Key")
 Section_Kd:NewButton("Key", "Allows you to take the key further and through walls", function()
     for _, map in ipairs(maps) do
         for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
@@ -209,7 +246,13 @@ Section_S:NewSlider("Speed value", "", 80, 16, function(spe)
     _G.Speed = spe
 end) 
 Section_S:NewButton("Set Speed", "", function()
-    Hu:SetAttribute("BaseSpeed", _G.Speed)
+   game.Players.LocalPlayer.Character.Humanoid:SetAttribute("BaseSpeed", _G.Speed)
+end)
+Section_S:NewButton("Write maximum speed", "", function()
+    game:GetService("StarterGui"):SetCore("SendNotification",{
+    Title = "Max speed",
+    Text = tostring(game.Players.LocalPlayer.Character.Humanoid:GetAttribute("BaseSpeed")), 
+    })
 end)
 Section_S:NewLabel("Jump")
 Section_S:NewSlider("Jump Height", "", 80, 7, function(s)
@@ -320,19 +363,87 @@ end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
 	Title = "Change log 22.05.23",
-	Text = "Add: Button hide UI", 
+	Text = "Better: Off/On Invisible walls Add: Esp dying players, Max lifting distance of a dying player", 
 	})	
 end)
 
 
+function espPlayerHelp()
+    spawn(function()
+        while _G.espPH do
+            if not _G.espPH then
+                break
+            end
+            for i, player in pairs(workspace.Game.GamePlayers:GetChildren()) do
+                local humanoid = player.Humanoid
+                local isPlayingRequiredAnim = false
+
+                if humanoid:GetPlayingAnimationTracks() then
+                    local currentAnim = humanoid:GetPlayingAnimationTracks() 
+                    for _, animTrack in ipairs(currentAnim) do
+                        if table.find(animIds, animTrack.Animation.AnimationId) then
+                            isPlayingRequiredAnim = true
+                            if player:FindFirstChild("Humanoid") then
+                                if not player:FindFirstChild("EspBox") then
+                                    if player ~= game.Players.LocalPlayer.Character then
+                                        local esp = Instance.new("BoxHandleAdornment",player)
+                                        local BillboardGui = Instance.new("BillboardGui")
+                                        local TextLabel = Instance.new("TextLabel")
+                                        esp.Adornee = player
+                                        esp.ZIndex = 0
+                                        esp.Size = Vector3.new(3, 2, 3)
+                                        esp.Transparency = 0.65
+                                        esp.Color3 = Color3.fromRGB(255,48,48)
+                                        esp.AlwaysOnTop = true
+                                        esp.Name = "EspBox"
+
+                                        BillboardGui.Parent = player
+                                        BillboardGui.AlwaysOnTop = true
+                                        BillboardGui.LightInfluence = 1
+                                        BillboardGui.Size = UDim2.new(0, 40, 0, 40)
+                                        BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
+                                        BillboardGui.Name = "Help"
+
+                                        TextLabel.Parent = BillboardGui
+                                        TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+                                        TextLabel.BackgroundTransparency = 1
+                                        TextLabel.Size = UDim2.new(1, 0, 1, 0)
+                                        TextLabel.Text = "Help him"
+                                        TextLabel.TextStrokeTransparency = 0
+                                        TextLabel.TextWrapped = false
+                                        TextLabel.TextColor3 = Color3.new(1, 0, 0)                               
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+
+                if not isPlayingRequiredAnim then
+                    if player:FindFirstChild("EspBox") and player:FindFirstChild("Help") then
+                        player:FindFirstChild("EspBox"):Destroy()
+                        player:FindFirstChild("Help"):Destroy()
+                    end
+                end
+            end
+            for i, v in pairs(workspace.Game.DiedPlayers:GetChildren()) do 
+                if v:FindFirstChild("EspBox") and v:FindFirstChild("Help") then
+                    v:FindFirstChild("EspBox"):Destroy()
+                    v:FindFirstChild("Help"):Destroy()
+                end
+            end
+            wait(0.50)
+        end
+    end)
+end
 function hideUiButton()
-    if not game:GetService("CoreGui"):FindFirstChild("button ui") then
+    if not game:GetService("CoreGui"):FindFirstChild(_G.nameButtonUI) then
         local Screenn = Instance.new("ScreenGui")
         Screenn.Parent = game:GetService("CoreGui")
-        Screenn.Name = "button ui"
+        Screenn.Name = _G.nameButtonUI
 
         local hide = Instance.new("ImageButton")
-        hide.Name = "hide UI"
+        hide.Name = _G.nameButtonUI
         hide.Parent = Screenn
         hide.Position = UDim2.new(0, 120, 0, -30)
         hide.Size = UDim2.new(0, 50, 0, 50)
@@ -490,23 +601,31 @@ function getDoor()
 end
 
 function delIPart()
-	local Maps = game:GetService("Workspace").Maps
-	for _, v in ipairs(Maps.Refuge.Parts["3"]:GetDescendants()) do
-		if v.Name == "collide" then
-			v:Destroy()
-		end
-	end
-
-	for _, b in ipairs(Maps.MagicCube.Parts.Folder.Folder:GetDescendants()) do
-		if b.Name == "BlockWall" then
-			b:Destroy()
-		end
-	end
-	Maps.School.InvisParts:Destroy()
-	Maps.Castle.InvisParts:Destroy()
-	Maps.MagicCube.InvisParts:Destroy()
-	Maps.Refuge.InvisParts:Destroy() 
-	Maps.IceCave.InvisParts:Destroy()
+    for _, map in ipairs(maps) do
+        for _, v in ipairs(game.Workspace.Maps[map].InvisParts:GetDescendants()) do
+            if v:IsA("Part") then
+                v.CanCollide = _G.offInPards
+                v.CanQuery = _G.offInPards
+            end
+        end
+        for _, v in ipairs(game:GetService("Workspace").Maps.Refuge.Parts["3"]:GetDescendants()) do
+            if v.Name == "collide" then
+                v.CanCollide = _G.offInPards
+                v.CanQuery = _G.offInPards
+            end
+        end
+        for _, school in ipairs(workspace.Maps.School.InvisParts.Stairs:GetChildren()) do 
+            school.CanCollide = true
+        end
+        for _, school2 in ipairs(workspace.Maps.School.InvisParts.Walls.Parterre:GetChildren()) do
+            school2.CanCollide = true
+        end
+        for _, school3 in ipairs(workspace.Maps.School.Parts.BUILD.build["1F"].BUILD.wall.zlwall:GetChildren()[2]:GetChildren()) do
+            if school3:IsA("UnionOperation") then
+                school3.CanCollide = true
+            end
+        end
+    end
 end
 function panic()
     if game:GetService("Players").LocalPlayer.PlayerGui.ScreenChasedWarning.Enabled then
