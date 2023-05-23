@@ -21,24 +21,65 @@ local Tab_M = Window:NewTab("Movements")
 local Section_M = Tab_M:NewSection("Movements")
 local Tab_V = Window:NewTab("Visuals")
 local Section_V = Tab_V:NewSection("Visuals")
+local Tab_Shop = Window:NewTab("Shop")
+local Section_Shop = Tab_Shop:NewSection("Open the shops")
 ESP:Toggle(true) 
 ESP.Players = false 
 _G.espMonster = false
 _G.espD = false
 _G.KeyEsp = false
-_G.fd = false
+_G.AutoDoor = false
 _G.espPH = false
 _G.maxDistnPH = false
 _G.offInPards = false
+_G.TimeEnd = false
+_G.nameButtonUI = nil
+_G.nameImageUI = nil
+_G.TimeEndName = nil
+_G.TimeEndNameText = nil
 _G.valHold = 0
 _G.Speed = 16
-_G.nameButtonUI = "werh4w-**7+95q34t/-*9+"
+
 local maps = {"Castle", "School", "MagicCube", "Refuge", "IceCave"}
 local localPlayer = game:GetService("Players").LocalPlayer
 local animIds = {"rbxassetid://12015079000", "rbxassetid://12015055714"}
-if game:GetService("CoreGui"):FindFirstChild(_G.nameButtonUI) then
-    game:GetService("CoreGui"):FindFirstChild(_G.nameButtonUI):Destroy()
+local function generateRandomName(length)
+  local characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()"
+  local name = ""
+  for i = 1, length do
+    local randomIndex = math.random(1, #characters)
+    local char = characters:sub(randomIndex, randomIndex)
+    name = name .. char
+  end
+
+  return name
 end
+_G.nameButtonUI = generateRandomName(15)
+_G.nameImageUI = generateRandomName(15)
+_G.TimeEndName = generateRandomName(15)
+_G.TimeEndNameText = generateRandomName(15)
+for i, v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+    if v:IsA("ImageButton")  and v.Parent:IsA("ScreenGui") and v.Image == "http://www.roblox.com/asset/?id=13511782360" then
+        v.Parent:Destroy()
+    end
+end
+
+for i, v in pairs(game:GetService("CoreGui"):GetDescendants()) do
+    if v:IsA("TextLabel") and v.Parent:IsA("ScreenGui") and v.TextColor3 == Color3.fromRGB(255, 87, 87) then
+        if v.Parent then
+            v.Parent:Destroy()
+        end
+    end
+end
+
+Section:NewToggle("Timer to end", "", function(timeendd)
+    _G.TimeEnd = timeendd
+    if timeendd then
+        timeEnd()
+    else
+        game:GetService("CoreGui"):FindFirstChild(_G.TimeEndName ):Destroy()
+    end
+end)
 Section:NewToggle("Off/On Invisible walls", "", function(offOninvPard)
     _G.offInPards = not offOninvPard
 	delIPart()
@@ -190,7 +231,7 @@ Section_D:NewToggle("Auto farm door         BETA", "BETA", function(ft)
             end
         end
     end
-    _G.fd = ft
+    _G.AutoDoor = ft
     local success, errorCheckWinDoor = pcall(function()
         checkWinDoor()
     end)
@@ -289,7 +330,12 @@ end)
 local effectNames = {
     ["Body Eyes"] = "FX_BodyEyes",
     ["Body Smoke"] = "FX_BodySmoke",
-    ["Body Mosaic"] = "FX_BodyMosaic"
+    ["Body Mosaic"] = "FX_BodyMosaic",
+    ["Unbeatable"] = "FX_Unbeatable",
+    ["Body Lightning"] = "FX_Body_Lightning",
+    ["CoinX3"] = "FX_CoinX3",
+    ["Trail Speed Doors"] = "FX_Trail_Speed_Doors",
+    ["Trail Speed"] = "FX_Trail_Speed"
 }
 local function AttachFXToCharacter(effectName)
     local player = game:GetService("Players").LocalPlayer
@@ -308,7 +354,7 @@ local function AttachFXToCharacter(effectName)
         end)
     end
 end
-Section_V:NewDropdown("Visuals", "", {"Body Eyes", "Body Smoke", "Body Mosaic"}, function(effectType)
+Section_V:NewDropdown("Visuals", "", {"Body Eyes", "Body Smoke", "Body Mosaic", "Unbeatable", "Body Lightning", "CoinX3", "Trail Speed Doors", "Trail Speed"}, function(effectType)
     local effectName = effectNames[effectType]
     if effectName then
         AttachFXToCharacter(effectName)
@@ -331,7 +377,25 @@ Section_V:NewButton("Dell visuals", "", function()
 	end
 	RemoveFXFromCharacter("FX_BodyEyes")
 	RemoveFXFromCharacter("FX_BodySmoke")
-	RemoveFXFromCharacter("FX_BodyMosaic")
+	RemoveFXFromCharacter("FX_BodyMosaic") 
+    RemoveFXFromCharacter("FX_Unbeatable")
+    RemoveFXFromCharacter("FX_Body_Lightning")
+    RemoveFXFromCharacter("FX_CoinX3") 
+    RemoveFXFromCharacter("FX_Trail_Speed_Doors")
+    RemoveFXFromCharacter("FX_Trail_Speed") 
+end)
+
+Section_Shop:NewButton("Open item shop", "", function()
+    game:GetService("Players").LocalPlayer.PlayerGui.ScreenItemShop.Enabled = true
+end)
+Section_Shop:NewButton("Open custom shop", "", function()
+    game:GetService("Players").LocalPlayer.PlayerGui.ScreenCustomShop.Enabled = true
+end)
+Section_Shop:NewButton("Open avatar shop", "", function()
+game:GetService("Players").LocalPlayer.PlayerGui.ScreenAvatar.Enabled = true
+end)
+Section_Shop:NewButton("Open battale pass", "", function()
+game:GetService("Players").LocalPlayer.PlayerGui.ScreenBattlePass.Enabled = true
 end)
 local vu = game:GetService("VirtualUser")
 game:GetService("Players").LocalPlayer.Idled:connect(function()
@@ -362,14 +426,42 @@ Section_cred:NewButton("copy my pastebin", "", function()
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log 22.05.23",
-	Text = "Better: Off/On Invisible walls Add: Esp dying players, Max lifting distance of a dying player", 
+	Title = "Change log 23.05.23",
+	Text = "Add; Timer to end, Open shops. Updated; list of Visuals", 
 	})	
 end)
 
 
-function espPlayerHelp()
+function timeEnd()
+    if not game:GetService("CoreGui"):FindFirstChild(_G.TimeEndName) then
+        local Screenn = Instance.new("ScreenGui")
+        Screenn.Parent = game:GetService("CoreGui")
+        Screenn.Name = _G.TimeEndName
+
+        local Tex = Instance.new("TextLabel")
+        Tex.Parent = Screenn
+        Tex.Name = _G.TimeEndNameText
+        Tex.BackgroundTransparency = 1
+        Tex.Position = UDim2.new(0, 760, 0, 40)
+        Tex.Size = UDim2.new(0, 80, 0, 80)
+        Tex.TextColor3 = Color3.fromRGB(255, 87, 87)
+        Tex.TextStrokeTransparency = 0
+        Tex.TextSize = 15
+    end
     spawn(function()
+        while _G.TimeEnd do
+            if not _G.TimeEnd then
+                break
+            end
+           -- if game:GetService("CoreGui"):FindFirstChild(_G.TimeEndName) then
+                game:GetService("CoreGui")[_G.TimeEndName][_G.TimeEndNameText].Text = workspace.Lobby.LoobyRoom.Interaction.GameDoor.Message.SurfaceGui.Text.Text
+         --  end
+        wait(0.1)
+        end
+    end)
+end
+function espPlayerHelp()
+    spawn(function()_G.ag = true
         while _G.espPH do
             if not _G.espPH then
                 break
@@ -443,7 +535,7 @@ function hideUiButton()
         Screenn.Name = _G.nameButtonUI
 
         local hide = Instance.new("ImageButton")
-        hide.Name = _G.nameButtonUI
+        hide.Name = _G.nameImageUI
         hide.Parent = Screenn
         hide.Position = UDim2.new(0, 120, 0, -30)
         hide.Size = UDim2.new(0, 50, 0, 50)
@@ -475,10 +567,9 @@ function hideUiButton()
         end)
     end
 end
-
 function checkWinDoor()
-    while _G.fd == true do
-        if _G.fd == false then
+    while _G.AutoDoor do
+        if not _G.AutoDoor then
             break
         end
         for _, map in ipairs(maps) do
@@ -489,7 +580,7 @@ function checkWinDoor()
                 for i, b in ipairs(descendants) do 
                     if b.Name == "GhostRoot" and #b:GetDescendants() == 0 then
                         ghostRootAvailable = true
-                        if _G.fd == false then
+                        if not _G.AutoDoor then
                             break
                         end
                         CheckKeyDoor()
@@ -510,9 +601,8 @@ function checkWinDoor()
         wait()
     end
 end
-
 function CheckKeyDoor()
-    if _G.fd == false then
+    if not _G.AutoDoor then
         return
     end
     if not localPlayer then
@@ -539,8 +629,6 @@ function CheckKeyDoor()
         end
     end
 end
-
-
 function getKey()
     for _, map in ipairs(maps) do
         for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemSpawn:GetDescendants()) do
@@ -553,7 +641,7 @@ function getKey()
                         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame + Vector3.new(0, -9, 0)
                         wait(0.1)
                         fireproximityprompt(proximityPrompt, 1, true)
-                        if _G.fd == false then 
+                        if not _G.AutoDoor then 
                             break
                         end         
                         local success, errorCheckKeyDoor = pcall(function()
@@ -564,7 +652,7 @@ function getKey()
                         game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Parent.CFrame + Vector3.new(0, 3, 0)
                         wait(0.2)
                         fireproximityprompt(proximityPrompt, 1, true)
-                        if _G.fd == false then
+                        if not _G.AutoDoor then
                             break
                         end         
                         local success, errorCheckKeyDoor = pcall(function()
@@ -577,7 +665,6 @@ function getKey()
         end
     end
 end
-
 function getDoor()
     for _, map in ipairs(maps) do
         for i, v in pairs(game.Workspace.Maps[map].ItemHuntFolder.ItemPlace:GetDescendants()) do
@@ -588,7 +675,7 @@ function getDoor()
                 wait(1)
                 fireproximityprompt(v, 1, true)
                 wait(0.1)
-                if _G.fd == false then
+                if _G.AutoDoor == false then
                     break
                 end
                 local success, errorCheckWinDoor = pcall(function()
@@ -599,7 +686,6 @@ function getDoor()
         end
     end
 end
-
 function delIPart()
     for _, map in ipairs(maps) do
         for _, v in ipairs(game.Workspace.Maps[map].InvisParts:GetDescendants()) do
@@ -746,12 +832,13 @@ function Kesp()
 			BillboardGui.Parent = parent
 			BillboardGui.AlwaysOnTop = true
 			BillboardGui.LightInfluence = 1
-			BillboardGui.Size = UDim2.new(0, 50, 0, 50)
-			BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
+			BillboardGui.Size = UDim2.new(0, 28, 0, 28)
+			BillboardGui.StudsOffset = Vector3.new(0, 1, 0)
 			TextLabel.Parent = BillboardGui
 			TextLabel.BackgroundColor3 = Color3.new(1, 1, 1)
 			TextLabel.BackgroundTransparency = 1
 			TextLabel.Size = UDim2.new(1, 0, 1, 0)
+            TextLabel.TextStrokeTransparency = 0
 			TextLabel.Text = "Key"
 			TextLabel.TextColor3 = Color3.new(1, 0, 0)
 			TextLabel.TextScaled = true
