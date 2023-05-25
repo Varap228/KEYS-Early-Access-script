@@ -2,6 +2,7 @@
 -- Bear rbxassetid://12629403201
 -- Joker rbxassetid://12629403068
 -- Rabbit rbxassetid://12629403353
+-- Yeti rbxassetid://13543099655
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Robojini/Tuturial_UI_Library/main/UI_Template_1"))()
 local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
 local Window = Library.CreateLib("By Varap228", "RJTheme8")
@@ -795,6 +796,8 @@ function espDecal()
 				imageName = 12629403353
 			elseif b.Name == "Joker" then
 				imageName = 12629403068
+            elseif b.Name == "Yeti" then
+				imageName = 13543099655       
 			end
 			if imageName then
 				createBillboardGui(b, imageName)
@@ -877,6 +880,12 @@ function esp()
 			IsEnabled = "Joker1" 
 			})
 			ESP:AddObjectListener(Workspace.Game.GamePlayers, {
+			Name = "Yeti", 
+			CustomName = "Yeti",
+			Color = Color3.fromRGB(255, 250, 250), 
+			IsEnabled = "Yeti1" 
+			})
+			ESP:AddObjectListener(Workspace.Game.GamePlayers, {
 			Name = "Rabbit", 
 			CustomName = "Rabbit",
 			Color = Color3.fromRGB(255,105,180), 
@@ -886,6 +895,7 @@ function esp()
 			ESP.Butcher1 = true
 			ESP.Joker1 = true
 			ESP.Rabbit1 = true
+            ESP.Yeti1 = true
 			wait(1.5)
 		end
 	end)
