@@ -427,8 +427,8 @@ Section_cred:NewButton("copy my pastebin", "", function()
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log 23.05.23",
-	Text = "Add; Timer to end, Open shops. Updated; list of Visuals", 
+	Title = "Change log 25.05.23",
+	Text = "Update script for last update game", 
 	})	
 end)
 
