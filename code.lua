@@ -5,7 +5,7 @@
 -- Yeti rbxassetid://13543099655
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Robojini/Tuturial_UI_Library/main/UI_Template_1"))()
 local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
-local Window = Library.CreateLib("By Varap228", "RJTheme8")
+local Window = Library.CreateLib("By Varap#9620", "RJTheme8")
 local Tab_cred = Window:NewTab("Credits")
 local Section_cred = Tab_cred:NewSection("Ctrl+click tp")
 local Tab = Window:NewTab("Main") 
@@ -41,7 +41,7 @@ _G.TimeEndNameText = nil
 _G.valHold = 0
 _G.Speed = 16
 
-local maps = {"Castle", "School", "MagicCube", "Refuge", "IceCave"}
+local maps = {"Castle", "School", "MagicCube", "Refuge", "IceCave", "Forest"} 
 local localPlayer = game:GetService("Players").LocalPlayer
 local animIds = {"rbxassetid://12015079000", "rbxassetid://12015055714"}
 local function generateRandomName(length)
@@ -270,6 +270,7 @@ Section_D:NewKeybind("Win door check", "Only already open", Enum.KeyCode.Z, func
         game.Workspace.Maps.Castle.ItemHuntFolder.ItemPlace,
 		game.Workspace.Maps.Refuge.ItemHuntFolder.ItemPlace,
 		game.Workspace.Maps.IceCave.ItemHuntFolder.ItemPlace,
+        game.Workspace.Maps.Forest.ItemHuntFolder.ItemPlace, 
     }) do
         if not checkVictoryDoor(itemHuntFolder) then
             victoryDoorNotFound = true
@@ -427,7 +428,7 @@ Section_cred:NewButton("copy my pastebin", "", function()
 end)
 Section_cred:NewButton("Change log", "", function()
 	game:GetService("StarterGui"):SetCore("SendNotification",{
-	Title = "Change log 25.05.23",
+	Title = "Change log 8.06.23",
 	Text = "Update script for last update game", 
 	})	
 end)
@@ -690,27 +691,37 @@ end
 function delIPart()
     for _, map in ipairs(maps) do
         for _, v in ipairs(game.Workspace.Maps[map].InvisParts:GetDescendants()) do
-            if v:IsA("Part") then
+            if v:IsA("Part") and v.Name ~= "base" then
                 v.CanCollide = _G.offInPards
-                v.CanQuery = _G.offInPards
+                v.CanQuery = true
+                v.CanTouch = true
             end
         end
-        for _, v in ipairs(game:GetService("Workspace").Maps.Refuge.Parts["3"]:GetDescendants()) do
-            if v.Name == "collide" then
-                v.CanCollide = _G.offInPards
-                v.CanQuery = _G.offInPards
-            end
+    end
+    for _, forest in ipairs(workspace.Maps.Forest.Parts.Wall:GetDescendants()) do
+        if forest:IsA("Part") and forest.Name == "collide" then
+            forest.CanCollide = _G.offInPards
+            forest.CanQuery = true
         end
-        for _, school in ipairs(workspace.Maps.School.InvisParts.Stairs:GetChildren()) do 
-            school.CanCollide = true
+    end
+    for _, v in ipairs(game:GetService("Workspace").Maps.Refuge.Parts["3"]:GetDescendants()) do
+        if v.Name == "collide" then
+            v.CanCollide = _G.offInPards
+            v.CanQuery = true
         end
-        for _, school2 in ipairs(workspace.Maps.School.InvisParts.Walls.Parterre:GetChildren()) do
-            school2.CanCollide = true
-        end
-        for _, school3 in ipairs(workspace.Maps.School.Parts.BUILD.build["1F"].BUILD.wall.zlwall:GetChildren()[2]:GetChildren()) do
-            if school3:IsA("UnionOperation") then
-                school3.CanCollide = true
-            end
+    end
+    for _, school in ipairs(workspace.Maps.School.InvisParts.Stairs:GetChildren()) do 
+        school.CanCollide = true
+        school.CanQuery = true
+    end
+    for _, school2 in ipairs(workspace.Maps.School.InvisParts.Walls.Parterre:GetChildren()) do
+        school2.CanCollide = true
+        school2.CanQuery = true
+    end
+    for _, school3 in ipairs(workspace.Maps.School.Parts.BUILD.build["1F"].BUILD.wall.zlwall:GetChildren()[2]:GetChildren()) do
+        if school3:IsA("UnionOperation") then
+            school3.CanCollide = true
+            school3.CanQuery = true
         end
     end
 end
@@ -736,6 +747,7 @@ function tpdoor()
 	teleportToGhostRoot(game:GetService("Workspace").Maps.MagicCube.ItemHuntFolder.ItemPlace)
 	teleportToGhostRoot(game:GetService("Workspace").Maps.Refuge.ItemHuntFolder.ItemPlace) 
 	teleportToGhostRoot(game:GetService("Workspace").Maps.IceCave.ItemHuntFolder.ItemPlace)
+    teleportToGhostRoot(game:GetService("Workspace").Maps.Forest.ItemHuntFolder.ItemPlace) 
 end
 function tpkey()
 	for _, map in ipairs(maps) do
@@ -820,11 +832,13 @@ function IespDell()
 	local magicCubeFolder = game:GetService("Workspace").Maps.MagicCube.ItemHuntFolder.ItemSpawn
 	local refugeFolder = game:GetService("Workspace").Maps.Refuge.ItemHuntFolder.ItemSpawn 
 	local icecaveFolder = game:GetService("Workspace").Maps.IceCave.ItemHuntFolder.ItemSpawn
+    local forestFolder = game:GetService("Workspace").Maps.Forest.ItemHuntFolder.ItemSpawn
 	disableBillboardGuis(castleFolder)
 	disableBillboardGuis(schoolFolder)
 	disableBillboardGuis(magicCubeFolder)
 	disableBillboardGuis(refugeFolder)
-	disableBillboardGuis(icecaveFolder)
+	disableBillboardGuis(icecaveFolder) 
+    disableBillboardGuis(forestFolder) 
 end
 function Kesp()
 	spawn(function ()
@@ -928,4 +942,5 @@ function Door()
 	searchForDoor(game.Workspace.Maps.MagicCube.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Magic Cube", "rbxassetid://13110717383")
 	searchForDoor(game.Workspace.Maps.Refuge.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Refuge", "rbxassetid://13256112532")
 	searchForDoor(game.Workspace.Maps.IceCave.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Ice Cave", "rbxassetid://13416355248")
+    searchForDoor(game.Workspace.Maps.Forest.ItemHuntFolder.ItemPlace, "Win door", "found the victory door in the Forest", "rbxassetid://13685804074")
 end
